@@ -76,20 +76,20 @@ func (b *Builder) storeCookie(cookieJar http.CookieJar) {
 	b.saveCache(data)
 }
 
-func (b *Builder) loadCookie() {
+func (b *Builder) loadCookie(client *http.Client) {
 	cookieJarBytes := b.loadCache()
 	if cookieJarBytes == nil {
 		Jars, err := cookiejar.New(&cookiejar.Options{PublicSuffixList: publicsuffix.List})
 		if err != nil {
 			logger.Fatal("[cookie-jar-err]", err)
 		}
-		b.Client.Jar = Jars
+		client.Jar = Jars
 	} else {
 		Jars, err := cookiejar.LoadFromJson(&cookiejar.Options{PublicSuffixList: publicsuffix.List}, cookieJarBytes)
 		if err != nil {
 			logger.Fatal("[cookie-jar-err]", err)
 		}
-		b.Client.Jar = Jars
+		client.Jar = Jars
 	}
 }
 
@@ -103,6 +103,6 @@ func (b *Builder) Build() Driver {
 		logger.Fatal("[builder-err]", "can't convert Transport to *http.Transport")
 	}
 	client.CheckRedirect = defaultCheckRedirect
-	b.loadCookie()
-	return &HttpDriver{Client: b.Client, StoreCookie: b.storeCookie}
+	b.loadCookie(client)
+	return &HttpDriver{Client: client, StoreCookie: b.storeCookie}
 }
