@@ -24,8 +24,8 @@ type HttpDriver struct {
 	StoreCookie StoreCookie
 }
 
-func (h *HttpDriver) send(req *Request, hreq *http.Request) (resp *Response) {
-	response, err := h.Client.Do(hreq)
+func (h *HttpDriver) send(realReq *http.Request) (resp *Response) {
+	response, err := h.Client.Do(realReq)
 	if response != nil && response.Body != nil {
 		defer response.Body.Close()
 	}
@@ -91,10 +91,10 @@ func (h *HttpDriver) Send(r *Request) (resp *Response) {
 	}
 	switch r.retry {
 	case 0:
-		resp = h.send(r, hreq)
+		resp = h.send(hreq)
 	default:
 		for times := -1; times < r.retry; times++ {
-			resp = h.send(r, hreq)
+			resp = h.send(hreq)
 			if resp.err == nil || !strings.Contains(resp.err.Error(), "request canceled") {
 				break
 			}
