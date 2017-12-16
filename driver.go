@@ -66,35 +66,37 @@ func (h *HttpDriver) Send(r *Request) (resp *Response) {
 		r.url.WriteByte('?')
 		r.url.Write(simplehttputil.BuildQueryEncoded(r.querys, r.charset))
 	}
-	if r.forms != nil {
-		r.body = simplehttputil.BuildFormEncoded(r.forms, r.charset)
-	}
-	resp = &Response{}
-	if r.jsonData != nil {
-		r.body, err = json.Marshal(r.jsonData)
+	switch {
+	case r.body != nil:
+	case r.forms != nil:
+		r.body = bytes.NewReader(simplehttputil.BuildFormEncoded(r.forms, r.charset))
+	case r.jsonData != nil:
+		body, err := json.Marshal(r.jsonData)
 		if err != nil {
 			resp.err = err
 			return
 		}
+		r.body = bytes.NewReader(body)
 	}
-	hreq, err := http.NewRequest(r.method, r.url.String(), bytes.NewReader(r.body))
+	resp = new(Response)
+	realReq, err := http.NewRequest(r.method, r.url.String(), r.body)
 	if err != nil {
 		resp.err = err
 		return
 	}
-	hreq.Header = r.header
+	realReq.Header = r.header
 	if r.clearCookies || h.Client.Jar == nil {
 		h.Client.Jar, _ = cookiejar.New(&cookiejar.Options{PublicSuffixList: publicsuffix.List})
 	}
 	if r.cookies != nil {
-		h.Client.Jar.SetCookies(hreq.URL, r.cookies)
+		h.Client.Jar.SetCookies(realReq.URL, r.cookies)
 	}
 	switch r.retry {
 	case 0:
-		resp = h.send(hreq)
+		resp = h.send(realReq)
 	default:
 		for times := -1; times < r.retry; times++ {
-			resp = h.send(hreq)
+			resp = h.send(realReq)
 			if resp.err == nil || !strings.Contains(resp.err.Error(), "request canceled") {
 				break
 			}

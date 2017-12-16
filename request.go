@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"github.com/LFZJun/simplehttp/simplehttputil"
 	"net/http"
+	"io"
 )
 
 // from my mac
@@ -15,7 +16,7 @@ type Request struct {
 	header       http.Header
 	cookies      []*http.Cookie
 	charset      simplehttputil.Charset
-	body         []byte
+	body         io.Reader
 	clearCookies bool
 	jsonData     interface{}
 	querys       [][2]string
@@ -163,7 +164,7 @@ func (r *Request) SetJSON(data interface{}) *Request {
 	return r
 }
 
-func (r *Request) SetBody(body []byte) *Request {
+func (r *Request) SetBody(body io.Reader) *Request {
 	r.body = body
 	return r
 }
