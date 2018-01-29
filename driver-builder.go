@@ -2,7 +2,7 @@ package simplehttp
 
 import (
 	"encoding/json"
-	"github.com/LFZJun/cookiejar"
+	"github.com/ljun20160606/cookiejar"
 	"golang.org/x/net/publicsuffix"
 	"net/http"
 	"net/url"

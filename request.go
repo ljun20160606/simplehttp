@@ -2,7 +2,7 @@ package simplehttp
 
 import (
 	"bytes"
-	"github.com/LFZJun/simplehttp/simplehttputil"
+	"github.com/ljun20160606/simplehttp/simplehttputil"
 	"net/http"
 	"io"
 )

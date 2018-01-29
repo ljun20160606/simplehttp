@@ -3,8 +3,8 @@ package simplehttp
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/LFZJun/cookiejar"
-	"github.com/LFZJun/simplehttp/simplehttputil"
+	"github.com/ljun20160606/cookiejar"
+	"github.com/ljun20160606/simplehttp/simplehttputil"
 	"golang.org/x/net/publicsuffix"
 	"golang.org/x/text/encoding"
 	"golang.org/x/text/encoding/htmlindex"

@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"time"
-	"github.com/LFZJun/simplehttp"
+	"github.com/ljun20160606/simplehttp"
 )
 
 type C map[string][]byte

@@ -2,7 +2,7 @@
 
 eg. search github
 ```go
-import "github.com/LFZJun/simplehttp"
+import "github.com/ljun20160606/simplehttp"
 
 func main() {
      simplehttp.
