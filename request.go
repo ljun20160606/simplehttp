@@ -1,10 +1,10 @@
 package simplehttp
 
 import (
-	"bytes"
 	"github.com/ljun20160606/simplehttp/simplehttputil"
-	"net/http"
 	"io"
+	"net/http"
+	"strings"
 )
 
 // from my mac
@@ -12,7 +12,7 @@ const defaultUA = `Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/5
 
 type Request struct {
 	method       string
-	url          *bytes.Buffer
+	url          *strings.Builder
 	header       http.Header
 	cookies      []*http.Cookie
 	charset      simplehttputil.Charset
@@ -88,7 +88,9 @@ func (r *Request) AddCookie(ck *http.Cookie) *Request {
 }
 
 func (r *Request) SetUrl(url string) *Request {
-	r.url = bytes.NewBufferString(url)
+	builder := strings.Builder{}
+	builder.WriteString(url)
+	r.url = &builder
 	return r
 }
 

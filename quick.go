@@ -1,13 +1,13 @@
 package simplehttp
 
 import (
-	"bytes"
 	"context"
 	"crypto/tls"
 	"log"
 	"net"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -81,29 +81,35 @@ func CookieJar() http.CookieJar {
 }
 
 func Get(url string) *Request {
-	return &Request{header: http.Header{}, url: bytes.NewBufferString(url), method: http.MethodGet, Driver: DefaultDriver}
+	return &Request{header: http.Header{}, url: newStringBuilder(url), method: http.MethodGet, Driver: DefaultDriver}
 }
 
 func Post(url string) *Request {
-	return &Request{header: http.Header{}, url: bytes.NewBufferString(url), method: http.MethodPost, Driver: DefaultDriver}
+	return &Request{header: http.Header{}, url: newStringBuilder(url), method: http.MethodPost, Driver: DefaultDriver}
 }
 
 func Delete(url string) *Request {
-	return &Request{header: http.Header{}, url: bytes.NewBufferString(url), method: http.MethodDelete, Driver: DefaultDriver}
+	return &Request{header: http.Header{}, url: newStringBuilder(url), method: http.MethodDelete, Driver: DefaultDriver}
 }
 
 func Put(url string) *Request {
-	return &Request{header: http.Header{}, url: bytes.NewBufferString(url), method: http.MethodPut, Driver: DefaultDriver}
+	return &Request{header: http.Header{}, url: newStringBuilder(url), method: http.MethodPut, Driver: DefaultDriver}
 }
 
 func Patch(url string) *Request {
-	return &Request{header: http.Header{}, url: bytes.NewBufferString(url), method: http.MethodPatch, Driver: DefaultDriver}
+	return &Request{header: http.Header{}, url: newStringBuilder(url), method: http.MethodPatch, Driver: DefaultDriver}
 }
 
 func Head(url string) *Request {
-	return &Request{header: http.Header{}, url: bytes.NewBufferString(url), method: http.MethodHead, Driver: DefaultDriver}
+	return &Request{header: http.Header{}, url: newStringBuilder(url), method: http.MethodHead, Driver: DefaultDriver}
 }
 
 func Options(url string) *Request {
-	return &Request{header: http.Header{}, url: bytes.NewBufferString(url), method: http.MethodOptions, Driver: DefaultDriver}
+	return &Request{header: http.Header{}, url: newStringBuilder(url), method: http.MethodOptions, Driver: DefaultDriver}
+}
+
+func newStringBuilder(str string) *strings.Builder {
+	builder := strings.Builder{}
+	builder.WriteString(str)
+	return &builder
 }

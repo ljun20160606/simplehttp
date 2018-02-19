@@ -1,14 +1,22 @@
 package simplehttp
 
 import (
-	"fmt"
+	"bytes"
 	"testing"
 )
 
+func init() {
+	Verbose = true
+}
+
 func TestGet(t *testing.T) {
-	fmt.Println(Get("https://github.com/search").
-		Query("utf8", "✓").
-		Query("q", "httpclient").
-		Send().
-		String())
+	if !bytes.Contains(
+		Get("https://github.com/search").
+			Query("q", "ljun20160606").
+			Query("type", "Users").
+			Query("utf-8", "✓").
+			Send().
+			Bytes(), []byte("LJun")) {
+		t.Fail()
+	}
 }

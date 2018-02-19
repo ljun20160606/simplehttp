@@ -23,8 +23,8 @@ func main() {
 	fmt.Println(
 		simplehttp.
 			Get("https://github.com/search").
+			Query("q", "simplehttp").
 			Query("utf8", "✓").
-			Query("q", "httpclient").
 			Send().
 			String())
 

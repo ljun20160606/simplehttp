@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"unsafe"
 )
 
 var ContentTypeMatchCharset = regexp.MustCompile(`[cC]harset=([\w|\-]*)`)
@@ -128,16 +129,17 @@ func (r *Response) String() (string, error) {
 		return "", r.err
 	}
 	if r.encoding == nil {
-		return string(r.body), nil
+		return *((*string)(unsafe.Pointer(&r.body))), nil
 	}
 	data, err := r.encoding.NewDecoder().Bytes(r.body)
 	if err != nil {
 		return "", err
 	}
+	str := *((*string)(unsafe.Pointer(&data)))
 	if Verbose {
-		logger.Println(string(data))
+		logger.Println(str)
 	}
-	return string(data), err
+	return str, err
 }
 
 func (r *Response) JSON(data interface{}) error {
