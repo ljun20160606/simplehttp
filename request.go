@@ -7,26 +7,23 @@ import (
 	"strings"
 )
 
-// from my mac
-const defaultUA = `Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.101 Safari/537.36`
-
 type Request struct {
 	method       string
 	url          *strings.Builder
 	header       http.Header
-	cookies      []*http.Cookie
-	charset      simplehttputil.Charset
-	body         io.Reader
-	clearCookies bool
-	jsonData     interface{}
 	querys       [][2]string
 	forms        map[string][]string
+	body         io.Reader
+	jsonData     interface{}
+	cookies      []*http.Cookie
+	charset      simplehttputil.Charset
+	clearCookies bool
 	retry        int
-	Driver       Driver
+	Client       Client
 }
 
-func NewRequest(driver Driver) *Request {
-	return &Request{header: http.Header{}, Driver: driver}
+func NewRequest(client Client) *Request {
+	return &Request{header: http.Header{}, Client: client}
 }
 
 func (r *Request) SetMethod(method string) *Request {
@@ -200,5 +197,5 @@ func (r *Request) UTF8() *Request {
 }
 
 func (r *Request) Send() (resp *Response) {
-	return r.Driver.Send(r)
+	return r.Client.Send(r)
 }

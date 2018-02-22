@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"time"
 	"github.com/ljun20160606/simplehttp"
+	"time"
 )
 
 type C map[string][]byte
@@ -30,7 +30,7 @@ func main() {
 
 	var c C = make(map[string][]byte)
 	user := "user1"
-	h := (&simplehttp.Builder{Cache: &c, SessionID: user}).Build()
+	h := simplehttp.NewClient(&simplehttp.Builder{Cache: &c, SessionID: user})
 
 	// login github
 	req := simplehttp.NewRequest(h)

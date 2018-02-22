@@ -1,4 +1,4 @@
-package simplehttp
+package cache
 
 import "time"
 

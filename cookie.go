@@ -6,43 +6,15 @@ import (
 	"strings"
 )
 
-func isNotToken(r rune) bool {
-	return !httplex.IsTokenRune(r)
-}
-
-func isCookieNameValid(raw string) bool {
-	if raw == "" {
-		return false
-	}
-	return strings.IndexFunc(raw, isNotToken) < 0
-}
-
-func parseCookieValue(raw string, allowDoubleQuote bool) (string, bool) {
-	// Strip the quotes, if present.
-	if allowDoubleQuote && len(raw) > 1 && raw[0] == '"' && raw[len(raw)-1] == '"' {
-		raw = raw[1 : len(raw)-1]
-	}
-	for i := 0; i < len(raw); i++ {
-		if !validCookieValueByte(raw[i]) {
-			return "", false
-		}
-	}
-	return raw, true
-}
-
-func validCookieValueByte(b byte) bool {
-	return 0x20 <= b && b < 0x7f && b != '"' && b != ';' && b != '\\'
-}
-
 //lines, ok := h["Cookie"]
 //if !ok {
 //	return []*http.Cookie{}
 //}
 func ReadCookies(lines []string, filter string) []*http.Cookie {
+	var cookies []*http.Cookie
 	if len(lines) == 0 {
-		return []*http.Cookie{}
+		return cookies
 	}
-	cookies := []*http.Cookie{}
 	for _, line := range lines {
 		parts := strings.Split(strings.TrimSpace(line), ";")
 		if len(parts) == 1 && parts[0] == "" {
@@ -74,4 +46,32 @@ func ReadCookies(lines []string, filter string) []*http.Cookie {
 		}
 	}
 	return cookies
+}
+
+func isCookieNameValid(raw string) bool {
+	if raw == "" {
+		return false
+	}
+	return strings.IndexFunc(raw, isNotToken) < 0
+}
+
+func isNotToken(r rune) bool {
+	return !httplex.IsTokenRune(r)
+}
+
+func parseCookieValue(raw string, allowDoubleQuote bool) (string, bool) {
+	// Strip the quotes, if present.
+	if allowDoubleQuote && len(raw) > 1 && raw[0] == '"' && raw[len(raw)-1] == '"' {
+		raw = raw[1 : len(raw)-1]
+	}
+	for i := 0; i < len(raw); i++ {
+		if !validCookieValueByte(raw[i]) {
+			return "", false
+		}
+	}
+	return raw, true
+}
+
+func validCookieValueByte(b byte) bool {
+	return 0x20 <= b && b < 0x7f && b != '"' && b != ';' && b != '\\'
 }

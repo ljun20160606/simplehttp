@@ -13,54 +13,22 @@ import (
 	"strings"
 )
 
-type Driver interface {
+var DefaultClient = &client{Client: DefaultHttpClient}
+
+type Client interface {
 	Send(req *Request) *Response
 }
 
-var DefaultDriver = &HttpDriver{Client: DefaultClient}
+func NewClient(builder *Builder) Client {
+	return builder.Build()
+}
 
-type HttpDriver struct {
+type client struct {
 	Client      *http.Client
 	StoreCookie StoreCookie
 }
 
-func (h *HttpDriver) send(realReq *http.Request) (resp *Response) {
-	response, err := h.Client.Do(realReq)
-	if response != nil && response.Body != nil {
-		defer response.Body.Close()
-	}
-	resp = new(Response)
-	if err != nil {
-		resp.err = err
-		return
-	}
-	data, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		resp.err = err
-		return
-	}
-	if h.StoreCookie != nil {
-		h.StoreCookie(h.Client.Jar)
-	}
-	var enc encoding.Encoding
-	contentType := response.Header.Get(ContentType)
-	if len(contentType) > 0 {
-		subMatch := ContentTypeMatchCharset.FindStringSubmatch(contentType)
-		var name string
-		if len(subMatch) == 2 {
-			if Verbose {
-				logger.Println("find html Encode ", subMatch[1])
-			}
-			name = subMatch[1]
-		}
-		if name != "" {
-			enc, _ = htmlindex.Get(name)
-		}
-	}
-	return &Response{code: response.StatusCode, body: data, header: response.Header, url: response.Request.URL, encoding: enc}
-}
-
-func (h *HttpDriver) Send(r *Request) (resp *Response) {
+func (h *client) Send(r *Request) (resp *Response) {
 	var err error
 	if r.querys != nil {
 		r.url.WriteByte('?')
@@ -103,4 +71,40 @@ func (h *HttpDriver) Send(r *Request) (resp *Response) {
 		}
 	}
 	return resp
+}
+
+func (h *client) send(realReq *http.Request) (resp *Response) {
+	response, err := h.Client.Do(realReq)
+	if response != nil && response.Body != nil {
+		defer response.Body.Close()
+	}
+	resp = new(Response)
+	if err != nil {
+		resp.err = err
+		return
+	}
+	data, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		resp.err = err
+		return
+	}
+	if h.StoreCookie != nil {
+		h.StoreCookie(h.Client.Jar)
+	}
+	var enc encoding.Encoding
+	contentType := response.Header.Get(ContentType)
+	if len(contentType) > 0 {
+		subMatch := ContentTypeMatchCharset.FindStringSubmatch(contentType)
+		var name string
+		if len(subMatch) == 2 {
+			if Verbose {
+				logger.Println("find html Encode ", subMatch[1])
+			}
+			name = subMatch[1]
+		}
+		if name != "" {
+			enc, _ = htmlindex.Get(name)
+		}
+	}
+	return &Response{code: response.StatusCode, body: data, header: response.Header, url: response.Request.URL, encoding: enc}
 }
