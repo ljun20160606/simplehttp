@@ -1,7 +1,6 @@
 package simplehttp
 
 import (
-	"crypto/tls"
 	"encoding/json"
 	"github.com/ljun20160606/cookiejar"
 	"github.com/ljun20160606/simplehttp/cache"
@@ -9,15 +8,6 @@ import (
 	"net/http"
 	"net/url"
 	"time"
-)
-
-var (
-	defaultCheckRedirect = func(req *http.Request, via []*http.Request) error {
-		if Verbose {
-			logger.Println(req.URL)
-		}
-		return nil
-	}
 )
 
 const (
@@ -30,11 +20,34 @@ type (
 	Proxy func(*http.Request) (*url.URL, error)
 
 	Builder struct {
-		SessionTimeout time.Duration
-		Timeout        time.Duration
+		// Timeout specifies a time limit for requests made by this
+		// Client. The timeout includes connection time, any
+		// redirects, and reading the response body. The timer remains
+		// running after Get, Head, Post, or Do return and will
+		// interrupt reading of the Response.Body.
+		//
+		// A Timeout of zero means no timeout.
+		//
+		// The Client cancels requests to the underlying Transport
+		// using the Request.Cancel mechanism. Requests passed
+		// to Client.Do may still set Request.Cancel; both will
+		// cancel the request.
+		//
+		// For compatibility, the Client will also use the deprecated
+		// CancelRequest method on Transport if found. New
+		// RoundTripper implementations should use Request.Cancel
+		// instead of implementing CancelRequest.
+		Timeout time.Duration
+
+		// Would don't use cache If nil
+		Cache cache.Cache
+
+		// Default Http1
+		ProtoMajor ProtoMajor
+
 		Proxy          Proxy
-		Cache          cache.Cache
 		SessionID      string
+		SessionTimeout time.Duration
 		Client         *http.Client
 	}
 )
@@ -42,22 +55,31 @@ type (
 func (b *Builder) Build() Client {
 	c := b.client()
 	c.Timeout = b.Timeout
-	if tr, ok := c.Transport.(*http.Transport); ok {
-		tr.Proxy = b.proxy()
-		tr.ExpectContinueTimeout = 0
-	} else {
-		logger.Fatal("[builder-err]", "can't convert Transport to *http.Transport")
+	proxy := b.proxy()
+	if proxy != nil {
+		if tr, ok := c.Transport.(*http.Transport); ok {
+			tr.Proxy = proxy
+			tr.ExpectContinueTimeout = 0
+		}
 	}
-	c.CheckRedirect = defaultCheckRedirect
-	b.loadCookie(c)
-	return &client{Client: c, StoreCookie: b.storeCookie}
+	client := &client{Client: c}
+	if b.Cache != nil {
+		b.loadCookie(c)
+		client.StoreCookie = b.storeCookie
+	}
+	return client
 }
 
 func (b *Builder) client() *http.Client {
 	if b.Client != nil {
 		return b.Client
 	}
-	return newNoSSLVerifyClient()
+	if b.ProtoMajor == 0 {
+		b.ProtoMajor = HTTP1
+	}
+	return &http.Client{
+		Transport: b.ProtoMajor.RoundTripper(),
+	}
 }
 
 func (b *Builder) proxy() Proxy {
@@ -102,18 +124,4 @@ func (b *Builder) sessionTimeout() time.Duration {
 		return defaultSessionTimeout
 	}
 	return b.SessionTimeout
-}
-
-func newNoSSLVerifyClient() *http.Client {
-	return &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig:       &tls.Config{InsecureSkipVerify: true},
-			Proxy:                 http.ProxyFromEnvironment,
-			DialContext:           DefaultDialContext,
-			MaxIdleConns:          100,
-			IdleConnTimeout:       90 * time.Second,
-			TLSHandshakeTimeout:   10 * time.Second,
-			ExpectContinueTimeout: 1 * time.Second,
-		},
-	}
 }

@@ -7,7 +7,6 @@ import (
 	"golang.org/x/text/encoding"
 	"golang.org/x/text/encoding/htmlindex"
 	"net/http"
-	"net/url"
 	"regexp"
 	"unsafe"
 )
@@ -15,11 +14,9 @@ import (
 var ContentTypeMatchCharset = regexp.MustCompile(`[cC]harset=([\w|\-]*)`)
 
 type Response struct {
-	code     int
-	err      error
-	header   http.Header
+	*http.Response
 	body     []byte
-	url      *url.URL
+	err      error
 	encoding encoding.Encoding
 }
 
@@ -102,26 +99,11 @@ func (r *Response) DocumentDetectedEncode() (doc *goquery.Document, err error) {
 	return goquery.NewDocumentFromReader(bytes.NewReader(data))
 }
 
-func (r *Response) Code() (int, error) {
-	if r.err != nil {
-		return 0, r.err
-	}
-	return r.code, nil
-}
-
 func (r *Response) Body() ([]byte, error) {
 	if r.err != nil {
 		return nil, r.err
 	}
 	return r.body, nil
-}
-
-func (r *Response) Header() http.Header {
-	return r.header
-}
-
-func (r *Response) URL() *url.URL {
-	return r.url
 }
 
 func (r *Response) String() (string, error) {
@@ -150,10 +132,6 @@ func (r *Response) JSON(data interface{}) error {
 		logger.Println(string(r.body))
 	}
 	return json.Unmarshal(r.body, data)
-}
-
-func (r *Response) Bytes() []byte {
-	return r.body
 }
 
 // http://www.w3.org/TR/encoding

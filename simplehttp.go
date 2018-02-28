@@ -11,9 +11,11 @@ import (
 )
 
 var (
-	Verbose            = false
-	logger             = log.New(os.Stdout, "[http] ", log.LstdFlags)
-	DefaultHttpClient  = newNoSSLVerifyClient()
+	Verbose           = false
+	logger            = log.New(os.Stdout, "[http] ", log.LstdFlags)
+	DefaultHttpClient = &http.Client{
+		Transport: HTTP1.RoundTripper(),
+	}
 	DefaultDialContext = DialContext(30*time.Second, 30*time.Second, 0)
 )
 
@@ -45,31 +47,31 @@ func CookieJar() http.CookieJar {
 }
 
 func Get(url string) *Request {
-	return &Request{header: http.Header{}, url: newStringBuilder(url), method: http.MethodGet, Client: DefaultClient}
+	return &Request{Header: http.Header{}, Url: newStringBuilder(url), Method: http.MethodGet, Client: DefaultClient}
 }
 
 func Post(url string) *Request {
-	return &Request{header: http.Header{}, url: newStringBuilder(url), method: http.MethodPost, Client: DefaultClient}
+	return &Request{Header: http.Header{}, Url: newStringBuilder(url), Method: http.MethodPost, Client: DefaultClient}
 }
 
 func Delete(url string) *Request {
-	return &Request{header: http.Header{}, url: newStringBuilder(url), method: http.MethodDelete, Client: DefaultClient}
+	return &Request{Header: http.Header{}, Url: newStringBuilder(url), Method: http.MethodDelete, Client: DefaultClient}
 }
 
 func Put(url string) *Request {
-	return &Request{header: http.Header{}, url: newStringBuilder(url), method: http.MethodPut, Client: DefaultClient}
+	return &Request{Header: http.Header{}, Url: newStringBuilder(url), Method: http.MethodPut, Client: DefaultClient}
 }
 
 func Patch(url string) *Request {
-	return &Request{header: http.Header{}, url: newStringBuilder(url), method: http.MethodPatch, Client: DefaultClient}
+	return &Request{Header: http.Header{}, Url: newStringBuilder(url), Method: http.MethodPatch, Client: DefaultClient}
 }
 
 func Head(url string) *Request {
-	return &Request{header: http.Header{}, url: newStringBuilder(url), method: http.MethodHead, Client: DefaultClient}
+	return &Request{Header: http.Header{}, Url: newStringBuilder(url), Method: http.MethodHead, Client: DefaultClient}
 }
 
 func Options(url string) *Request {
-	return &Request{header: http.Header{}, url: newStringBuilder(url), method: http.MethodOptions, Client: DefaultClient}
+	return &Request{Header: http.Header{}, Url: newStringBuilder(url), Method: http.MethodOptions, Client: DefaultClient}
 }
 
 func newStringBuilder(str string) *strings.Builder {

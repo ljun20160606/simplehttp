@@ -16,7 +16,7 @@ import (
 var DefaultClient = &client{Client: DefaultHttpClient}
 
 type Client interface {
-	Send(req *Request) *Response
+	Send(request *Request) *Response
 }
 
 func NewClient(builder *Builder) Client {
@@ -24,46 +24,46 @@ func NewClient(builder *Builder) Client {
 }
 
 type client struct {
-	Client      *http.Client
+	*http.Client
 	StoreCookie StoreCookie
 }
 
 func (h *client) Send(r *Request) (resp *Response) {
 	var err error
-	if r.querys != nil {
-		r.url.WriteByte('?')
-		r.url.Write(simplehttputil.BuildQueryEncoded(r.querys, r.charset))
+	if r.Querys != nil {
+		r.Url.WriteByte('?')
+		r.Url.Write(simplehttputil.BuildQueryEncoded(r.Querys, r.Charset))
 	}
 	switch {
-	case r.body != nil:
-	case r.forms != nil:
-		r.body = bytes.NewReader(simplehttputil.BuildFormEncoded(r.forms, r.charset))
-	case r.jsonData != nil:
-		body, err := json.Marshal(r.jsonData)
+	case r.Body != nil:
+	case r.Forms != nil:
+		r.Body = bytes.NewReader(simplehttputil.BuildFormEncoded(r.Forms, r.Charset))
+	case r.JsonData != nil:
+		body, err := json.Marshal(r.JsonData)
 		if err != nil {
 			resp.err = err
 			return
 		}
-		r.body = bytes.NewReader(body)
+		r.Body = bytes.NewReader(body)
 	}
 	resp = new(Response)
-	realReq, err := http.NewRequest(r.method, r.url.String(), r.body)
+	realReq, err := http.NewRequest(r.Method, r.Url.String(), r.Body)
 	if err != nil {
 		resp.err = err
 		return
 	}
-	realReq.Header = r.header
-	if r.clearCookies || h.Client.Jar == nil {
+	realReq.Header = r.Header
+	if r.IsClearCookie || h.Client.Jar == nil {
 		h.Client.Jar, _ = cookiejar.New(&cookiejar.Options{PublicSuffixList: publicsuffix.List})
 	}
-	if r.cookies != nil {
-		h.Client.Jar.SetCookies(realReq.URL, r.cookies)
+	if r.Cookies != nil {
+		h.Client.Jar.SetCookies(realReq.URL, r.Cookies)
 	}
-	switch r.retry {
+	switch r.Retry {
 	case 0:
 		resp = h.send(realReq)
 	default:
-		for times := -1; times < r.retry; times++ {
+		for times := -1; times < r.Retry; times++ {
 			resp = h.send(realReq)
 			if resp.err == nil || !strings.Contains(resp.err.Error(), "request canceled") {
 				break
@@ -106,5 +106,5 @@ func (h *client) send(realReq *http.Request) (resp *Response) {
 			enc, _ = htmlindex.Get(name)
 		}
 	}
-	return &Response{code: response.StatusCode, body: data, header: response.Header, url: response.Request.URL, encoding: enc}
+	return &Response{body: data, encoding: enc, Response: response}
 }
