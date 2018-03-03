@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-var DefaultClient = &client{Client: DefaultHttpClient}
+var DefaultClient = &HttpClient{Client: DefaultHttpClient}
 
 type Client interface {
 	Send(request *Request) *Response
@@ -23,12 +23,12 @@ func NewClient(builder *Builder) Client {
 	return builder.Build()
 }
 
-type client struct {
+type HttpClient struct {
 	*http.Client
 	StoreCookie StoreCookie
 }
 
-func (h *client) Send(r *Request) (resp *Response) {
+func (h *HttpClient) Send(r *Request) (resp *Response) {
 	var err error
 	if r.Querys != nil {
 		r.Url.WriteByte('?')
@@ -73,7 +73,7 @@ func (h *client) Send(r *Request) (resp *Response) {
 	return resp
 }
 
-func (h *client) send(realReq *http.Request) (resp *Response) {
+func (h *HttpClient) send(realReq *http.Request) (resp *Response) {
 	response, err := h.Client.Do(realReq)
 	if response != nil && response.Body != nil {
 		defer response.Body.Close()

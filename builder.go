@@ -62,7 +62,7 @@ func (b *Builder) Build() Client {
 			tr.ExpectContinueTimeout = 0
 		}
 	}
-	client := &client{Client: c}
+	client := &HttpClient{Client: c}
 	if b.Cache != nil {
 		b.loadCookie(c)
 		client.StoreCookie = b.storeCookie
