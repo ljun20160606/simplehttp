@@ -147,3 +147,7 @@ func (r *Response) Encode(name string) *Response {
 	r.encoding = enc
 	return r
 }
+
+func (r *Response) Error() error {
+	return r.err
+}
