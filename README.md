@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-    <a href="https://golang.org/doc/go1.10"><img src="https://img.shields.io/badge/go-v1.10.0-blue.svg"></a>
+    <a href="https://golang.org/doc/go1.11"><img src="https://img.shields.io/badge/go-v1.11.1-blue.svg"></a>
     <a href="http://commitizen.github.io/cz-cli"><img src="https://img.shields.io/badge/commitizen-friendly-brightgreen.svg"></a>
 </p>
 

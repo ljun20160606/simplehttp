@@ -1,7 +1,7 @@
 package simplehttp
 
 import (
-	"golang.org/x/net/lex/httplex"
+	"golang.org/x/net/http/httpguts"
 	"net/http"
 	"strings"
 )
@@ -56,7 +56,7 @@ func isCookieNameValid(raw string) bool {
 }
 
 func isNotToken(r rune) bool {
-	return !httplex.IsTokenRune(r)
+	return !httpguts.IsTokenRune(r)
 }
 
 func parseCookieValue(raw string, allowDoubleQuote bool) (string, bool) {

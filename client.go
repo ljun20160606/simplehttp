@@ -37,7 +37,7 @@ func (h *HttpClient) Send(r *Request) (resp *Response) {
 	switch {
 	case r.Body != nil:
 	case r.Forms != nil:
-		r.Body = bytes.NewReader(simplehttputil.BuildFormEncoded(r.Forms, r.Charset))
+		r.Body = bytes.NewReader(simplehttputil.BuildQueryEncoded(r.Forms, r.Charset))
 	case r.JsonData != nil:
 		body, err := json.Marshal(r.JsonData)
 		if err != nil {

@@ -29,19 +29,3 @@ func BuildQueryEncoded(source [][2]string, charset Charset) []byte {
 	}
 	return buf.Bytes()
 }
-
-func BuildFormEncoded(source map[string][]string, charset Charset) []byte {
-	var buf bytes.Buffer
-	for k, strs := range source {
-		for _, v := range strs {
-			if buf.Len() > 0 {
-				buf.WriteByte('&')
-			}
-			buf.WriteString(k)
-			buf.WriteByte('=')
-			charset.Encode(&v)
-			buf.WriteString(url.QueryEscape(v))
-		}
-	}
-	return buf.Bytes()
-}

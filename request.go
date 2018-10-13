@@ -12,7 +12,7 @@ type Request struct {
 	Url           *strings.Builder
 	Header        http.Header
 	Querys        [][2]string
-	Forms         map[string][]string
+	Forms         [][2]string
 	Body          io.Reader
 	JsonData      interface{}
 	Cookies       []*http.Cookie
@@ -104,57 +104,31 @@ func (r *Request) Query(k, v string) *Request {
 	return r
 }
 
-func (r *Request) QueryArray(k string, vs []string) *Request {
-	if r.Querys == nil {
-		r.Querys = [][2]string{}
-	}
-	for _, v := range vs {
-		r.Querys = append(r.Querys, [2]string{k, v})
-	}
-	return r
-}
-
 func (r *Request) SetQuerys(querys [][2]string) *Request {
 	r.Querys = querys
 	return r
 }
 
 func (r *Request) Form(k string, v string) *Request {
-	if r.Forms == nil {
-		r.Forms = make(map[string][]string)
-		r.Head(ContentType, "application/x-www-form-urlencoded")
-	}
-	r.Forms[k] = append(r.Forms[k], v)
+	r.formInit()
+	r.Forms = append(r.Forms, [2]string{k, v})
 	return r
 }
 
-func (r *Request) FormForce(k string, v string) *Request {
+func (r *Request) formInit() {
 	if r.Forms == nil {
-		r.Forms = make(map[string][]string)
 		r.Head(ContentType, "application/x-www-form-urlencoded")
 	}
-	r.Forms[k] = []string{v}
-	return r
 }
 
-func (r *Request) FormArray(k string, v []string) *Request {
-	if r.Forms == nil {
-		r.Forms = make(map[string][]string)
-		r.Head(ContentType, "application/x-www-form-urlencoded")
-	}
-	r.Forms[k] = v
-	return r
-}
-
-func (r *Request) SetForms(forms map[string][]string) *Request {
-	if r.Forms == nil {
-		r.Head(ContentType, "application/x-www-form-urlencoded")
-	}
+func (r *Request) SetForms(forms [][2]string) *Request {
 	if forms == nil {
-		r.Forms = make(map[string][]string)
-	} else {
-		r.Forms = forms
+		return r
 	}
+	if r.Forms == nil {
+		r.Head(ContentType, "application/x-www-form-urlencoded")
+	}
+	r.Forms = forms
 	return r
 }
 
