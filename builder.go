@@ -1,13 +1,14 @@
 package simplehttp
 
 import (
-	"encoding/json"
-	"github.com/ljun20160606/cookiejar"
-	"github.com/ljun20160606/simplehttp/cache"
-	"golang.org/x/net/publicsuffix"
-	"net/http"
-	"net/url"
-	"time"
+  "encoding/json"
+  "github.com/ljun20160606/cookiejar"
+  "github.com/ljun20160606/simplehttp/cache"
+  "golang.org/x/net/http2"
+  "golang.org/x/net/publicsuffix"
+  "net/http"
+  "net/url"
+  "time"
 )
 
 const (
@@ -62,6 +63,14 @@ func (b *Builder) Build() Client {
 			tr.ExpectContinueTimeout = 0
 		}
 	}
+  if b.ProtoMajor == HTTP2 {
+    if tr, ok := c.Transport.(*http.Transport); ok {
+      err := http2.ConfigureTransport(tr)
+      if err != nil {
+        logger.Fatal("[client-err]", err)
+      }
+    }
+  }
 	client := &HttpClient{Client: c}
 	if b.Cache != nil {
 		b.loadCookie(c)
@@ -74,11 +83,8 @@ func (b *Builder) client() *http.Client {
 	if b.Client != nil {
 		return b.Client
 	}
-	if b.ProtoMajor == 0 {
-		b.ProtoMajor = HTTP1
-	}
 	return &http.Client{
-		Transport: b.ProtoMajor.RoundTripper(),
+		Transport: HTTP1.RoundTripper(),
 	}
 }
 
