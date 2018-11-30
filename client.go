@@ -2,12 +2,15 @@ package simplehttp
 
 import (
 	"bytes"
+	"compress/flate"
+	"compress/gzip"
 	"encoding/json"
 	"github.com/ljun20160606/cookiejar"
 	"github.com/ljun20160606/simplehttp/simplehttputil"
 	"golang.org/x/net/publicsuffix"
 	"golang.org/x/text/encoding"
 	"golang.org/x/text/encoding/htmlindex"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -83,7 +86,8 @@ func (h *HttpClient) send(realReq *http.Request) (resp *Response) {
 		resp.err = err
 		return
 	}
-	data, err := ioutil.ReadAll(response.Body)
+	reader := deCompress(response.Header.Get("content-encoding"), response.Body)
+	data, err := ioutil.ReadAll(reader)
 	if err != nil {
 		resp.err = err
 		return
@@ -107,4 +111,17 @@ func (h *HttpClient) send(realReq *http.Request) (resp *Response) {
 		}
 	}
 	return &Response{body: data, encoding: enc, Response: response}
+}
+
+func deCompress(contentEncoding string, reader io.ReadCloser) (r io.ReadCloser) {
+	switch strings.ToLower(contentEncoding) {
+	case "gzip":
+		r, _ = gzip.NewReader(reader)
+		return
+	case "deflate":
+		r = flate.NewReader(reader)
+		return
+	default:
+		return reader
+	}
 }
