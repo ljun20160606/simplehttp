@@ -1,14 +1,14 @@
 package simplehttp
 
 import (
-  "encoding/json"
-  "github.com/ljun20160606/cookiejar"
-  "github.com/ljun20160606/simplehttp/cache"
-  "golang.org/x/net/http2"
-  "golang.org/x/net/publicsuffix"
-  "net/http"
-  "net/url"
-  "time"
+	"encoding/json"
+	"github.com/ljun20160606/cookiejar"
+	"github.com/ljun20160606/simplehttp/cache"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/publicsuffix"
+	"net/http"
+	"net/url"
+	"time"
 )
 
 const (
@@ -63,14 +63,14 @@ func (b *Builder) Build() Client {
 			tr.ExpectContinueTimeout = 0
 		}
 	}
-  if b.ProtoMajor == HTTP2 {
-    if tr, ok := c.Transport.(*http.Transport); ok {
-      err := http2.ConfigureTransport(tr)
-      if err != nil {
-        logger.Fatal("[client-err]", err)
-      }
-    }
-  }
+	if b.ProtoMajor == HTTP2 {
+		if tr, ok := c.Transport.(*http.Transport); ok {
+			err := http2.ConfigureTransport(tr)
+			if err != nil {
+				logger.Fatal("[client-err]", err)
+			}
+		}
+	}
 	client := &HttpClient{Client: c}
 	if b.Cache != nil {
 		b.loadCookie(c)
@@ -96,28 +96,17 @@ func (b *Builder) proxy() Proxy {
 }
 
 func (b *Builder) loadCookie(client *http.Client) {
-	cookieJarBytes := b.loadCache()
+	cookieJarBytes, _ := b.Cache.Get(b.SessionID)
+	options := &cookiejar.Options{PublicSuffixList: publicsuffix.List}
+	var err error
 	if cookieJarBytes == nil {
-		Jars, err := cookiejar.New(&cookiejar.Options{PublicSuffixList: publicsuffix.List})
-		if err != nil {
-			logger.Fatal("[cookie-jar-err]", err)
-		}
-		client.Jar = Jars
+		client.Jar, err = cookiejar.New(options)
 	} else {
-		Jars, err := cookiejar.LoadFromJson(&cookiejar.Options{PublicSuffixList: publicsuffix.List}, cookieJarBytes)
-		if err != nil {
-			logger.Fatal("[cookie-jar-err]", err)
-		}
-		client.Jar = Jars
+		client.Jar, err = cookiejar.LoadFromJson(options, cookieJarBytes)
 	}
-}
-
-func (b *Builder) loadCache() (data []byte) {
-	if cacheData, found := b.Cache.Get(b.SessionID); found && cacheData != nil {
-		data = cacheData
-		return
+	if err != nil {
+		logger.Fatal("[cookie-jar-err]", err)
 	}
-	return
 }
 
 func (b *Builder) storeCookie(cookieJar http.CookieJar) {
