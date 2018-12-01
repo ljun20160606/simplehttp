@@ -6,7 +6,6 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 )
 
@@ -46,36 +45,30 @@ func CookieJar() http.CookieJar {
 	return DefaultHttpClient.Jar
 }
 
-func Get(url string) *Request {
-	return &Request{Header: http.Header{}, Url: newStringBuilder(url), Method: http.MethodGet, Client: DefaultClient}
+func Get() *Request {
+	return &Request{Header: http.Header{}, Method: http.MethodGet, Client: DefaultClient}
 }
 
-func Post(url string) *Request {
-	return &Request{Header: http.Header{}, Url: newStringBuilder(url), Method: http.MethodPost, Client: DefaultClient}
+func Post() *Request {
+	return &Request{Header: http.Header{}, Method: http.MethodPost, Client: DefaultClient}
 }
 
-func Delete(url string) *Request {
-	return &Request{Header: http.Header{}, Url: newStringBuilder(url), Method: http.MethodDelete, Client: DefaultClient}
+func Delete() *Request {
+	return &Request{Header: http.Header{}, Method: http.MethodDelete, Client: DefaultClient}
 }
 
-func Put(url string) *Request {
-	return &Request{Header: http.Header{}, Url: newStringBuilder(url), Method: http.MethodPut, Client: DefaultClient}
+func Put() *Request {
+	return &Request{Header: http.Header{}, Method: http.MethodPut, Client: DefaultClient}
 }
 
-func Patch(url string) *Request {
-	return &Request{Header: http.Header{}, Url: newStringBuilder(url), Method: http.MethodPatch, Client: DefaultClient}
+func Patch() *Request {
+	return &Request{Header: http.Header{}, Method: http.MethodPatch, Client: DefaultClient}
 }
 
-func Head(url string) *Request {
-	return &Request{Header: http.Header{}, Url: newStringBuilder(url), Method: http.MethodHead, Client: DefaultClient}
+func Head() *Request {
+	return &Request{Header: http.Header{}, Method: http.MethodHead, Client: DefaultClient}
 }
 
-func Options(url string) *Request {
-	return &Request{Header: http.Header{}, Url: newStringBuilder(url), Method: http.MethodOptions, Client: DefaultClient}
-}
-
-func newStringBuilder(str string) *strings.Builder {
-	builder := strings.Builder{}
-	builder.WriteString(str)
-	return &builder
+func Options() *Request {
+	return &Request{Header: http.Header{}, Method: http.MethodOptions, Client: DefaultClient}
 }

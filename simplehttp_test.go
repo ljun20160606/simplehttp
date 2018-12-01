@@ -11,7 +11,8 @@ func init() {
 }
 
 func TestGet(t *testing.T) {
-	body, err := Get("https://github.com/search").
+	body, err := Get().
+		SetUrl("https://github.com/search").
 		Query("q", "ljun20160606").
 		Query("type", "Users").
 		Query("utf-8", "✓").
