@@ -8,18 +8,22 @@ import (
 )
 
 type Request struct {
-	Method        string
-	Url           *strings.Builder
-	Header        http.Header
-	Querys        [][2]string
-	Forms         [][2]string
-	Body          io.Reader
-	JsonData      interface{}
-	Cookies       []*http.Cookie
-	Charset       simplehttputil.Charset
+	Method   string
+	Url      *strings.Builder
+	Header   http.Header
+	Querys   [][2]string
+	Forms    [][2]string
+	Body     io.Reader
+	JsonData interface{}
+	Cookies  []*http.Cookie
+	Charset  simplehttputil.Charset
+	Client   Client
+	Config   RequestConfig
+}
+
+type RequestConfig struct {
 	IsClearCookie bool
 	Retry         int
-	Client        Client
 }
 
 func NewRequest(client Client) *Request {
@@ -92,7 +96,7 @@ func (r *Request) SetUrl(url string) *Request {
 }
 
 func (r *Request) ClearCookie() *Request {
-	r.IsClearCookie = true
+	r.Config.IsClearCookie = true
 	return r
 }
 
@@ -143,7 +147,7 @@ func (r *Request) SetBody(body io.Reader) *Request {
 }
 
 func (r *Request) SetRetry(retry int) *Request {
-	r.Retry = retry
+	r.Config.Retry = retry
 	return r
 }
 

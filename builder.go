@@ -55,7 +55,9 @@ type (
 
 func (b *Builder) Build() Client {
 	c := b.client()
+	// timeout
 	c.Timeout = b.Timeout
+	// proxy
 	proxy := b.proxy()
 	if proxy != nil {
 		if tr, ok := c.Transport.(*http.Transport); ok {
@@ -63,6 +65,7 @@ func (b *Builder) Build() Client {
 			tr.ExpectContinueTimeout = 0
 		}
 	}
+	// protoMajor
 	if b.ProtoMajor == HTTP2 {
 		if tr, ok := c.Transport.(*http.Transport); ok {
 			err := http2.ConfigureTransport(tr)
@@ -71,9 +74,11 @@ func (b *Builder) Build() Client {
 			}
 		}
 	}
+	// httpClient
 	client := &HttpClient{Client: c}
+	// cookie
 	if b.Cache != nil {
-		b.loadCookie(c)
+		c.Jar = b.loadCookie()
 		client.StoreCookie = b.storeCookie
 	}
 	return client
@@ -95,18 +100,19 @@ func (b *Builder) proxy() Proxy {
 	return http.ProxyFromEnvironment
 }
 
-func (b *Builder) loadCookie(client *http.Client) {
+func (b *Builder) loadCookie() (jar http.CookieJar) {
 	cookieJarBytes, _ := b.Cache.Get(b.SessionID)
 	options := &cookiejar.Options{PublicSuffixList: publicsuffix.List}
 	var err error
 	if cookieJarBytes == nil {
-		client.Jar, err = cookiejar.New(options)
+		jar, err = cookiejar.New(options)
 	} else {
-		client.Jar, err = cookiejar.LoadFromJson(options, cookieJarBytes)
+		jar, err = cookiejar.LoadFromJson(options, cookieJarBytes)
 	}
 	if err != nil {
 		logger.Fatal("[cookie-jar-err]", err)
 	}
+	return jar
 }
 
 func (b *Builder) storeCookie(cookieJar http.CookieJar) {
