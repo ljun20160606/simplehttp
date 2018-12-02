@@ -15,21 +15,23 @@ const (
 	HTTP2
 )
 
+func defaultHttpRoundTripperFunc() http.RoundTripper {
+	return &http.Transport{
+		TLSClientConfig:       &tls.Config{InsecureSkipVerify: true},
+		Proxy:                 http.ProxyFromEnvironment,
+		DialContext:           DefaultDialContext,
+		MaxIdleConns:          100,
+		IdleConnTimeout:       90 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+	}
+}
+
 var RoundTripFactory = map[ProtoMajor]func() http.RoundTripper{
-	HTTP1: func() http.RoundTripper {
-		return &http.Transport{
-			TLSClientConfig:       &tls.Config{InsecureSkipVerify: true},
-			Proxy:                 http.ProxyFromEnvironment,
-			DialContext:           DefaultDialContext,
-			MaxIdleConns:          100,
-			IdleConnTimeout:       90 * time.Second,
-			ExpectContinueTimeout: 1 * time.Second,
-		}
-	},
+	HTTP1: defaultHttpRoundTripperFunc,
 	HTTP2: func() http.RoundTripper {
-		return &http2.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		}
+		tripper := defaultHttpRoundTripperFunc().(*http.Transport)
+		_ = http2.ConfigureTransport(tripper)
+		return tripper
 	},
 }
 
