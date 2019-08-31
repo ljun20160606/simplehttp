@@ -1,4 +1,4 @@
-package simplehttputil
+package util
 
 import (
 	"fmt"

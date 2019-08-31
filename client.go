@@ -6,7 +6,6 @@ import (
 	"compress/gzip"
 	"encoding/json"
 	"github.com/ljun20160606/cookiejar"
-	"github.com/ljun20160606/simplehttp/simplehttputil"
 	"github.com/pkg/errors"
 	"golang.org/x/net/publicsuffix"
 	"golang.org/x/text/encoding"
@@ -59,12 +58,19 @@ func (h *HttpClient) Send(r *Request) (resp *Response) {
 // cast simplehttp.Request to http.Request
 func castToHttpRequest(r *Request) (*http.Request, error) {
 	// url
-	buildUrl(r)
+	err := buildUrl(r)
+	if err != nil {
+		return nil, err
+	}
 	// body
 	switch {
 	case r.Body != nil:
 	case r.Forms != nil:
-		r.Body = bytes.NewReader(simplehttputil.BuildQueryEncoded(r.Forms, r.Charset))
+		queryEncoded, err := BuildQueryEncoded(r.Forms, r.Charset)
+		if err != nil {
+			return nil, err
+		}
+		r.Body = bytes.NewReader(queryEncoded)
 	case r.JsonData != nil:
 		body, err := json.Marshal(r.JsonData)
 		if err != nil {
@@ -80,12 +86,16 @@ func castToHttpRequest(r *Request) (*http.Request, error) {
 	return realReq, nil
 }
 
-func buildUrl(r *Request) string {
+func buildUrl(r *Request) error {
 	if r.Querys != nil {
 		r.Url.WriteByte('?')
-		r.Url.Write(simplehttputil.BuildQueryEncoded(r.Querys, r.Charset))
+		queryEncoded, err := BuildQueryEncoded(r.Querys, r.Charset)
+		if err != nil {
+			return err
+		}
+		r.Url.Write(queryEncoded)
 	}
-	return r.Url.String()
+	return nil
 }
 
 // according simplehttp.Request config
@@ -104,7 +114,7 @@ func (h *HttpClient) emit(realReq *http.Request) *Response {
 		return failResponse(err)
 	}
 	defer func() {
-		response.Body.Close()
+		_ = response.Body.Close()
 		if h.StoreCookie != nil {
 			h.StoreCookie(h.Jar)
 		}

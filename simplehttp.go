@@ -46,29 +46,33 @@ func CookieJar() http.CookieJar {
 }
 
 func Get() *Request {
-	return &Request{Header: http.Header{}, Method: http.MethodGet, Client: DefaultClient}
+	return Method(http.MethodGet)
 }
 
 func Post() *Request {
-	return &Request{Header: http.Header{}, Method: http.MethodPost, Client: DefaultClient}
+	return Method(http.MethodPost)
 }
 
 func Delete() *Request {
-	return &Request{Header: http.Header{}, Method: http.MethodDelete, Client: DefaultClient}
+	return Method(http.MethodDelete)
 }
 
 func Put() *Request {
-	return &Request{Header: http.Header{}, Method: http.MethodPut, Client: DefaultClient}
+	return Method(http.MethodPut)
 }
 
 func Patch() *Request {
-	return &Request{Header: http.Header{}, Method: http.MethodPatch, Client: DefaultClient}
+	return Method(http.MethodPatch)
 }
 
 func Head() *Request {
-	return &Request{Header: http.Header{}, Method: http.MethodHead, Client: DefaultClient}
+	return Method(http.MethodHead)
 }
 
 func Options() *Request {
-	return &Request{Header: http.Header{}, Method: http.MethodOptions, Client: DefaultClient}
+	return Method(http.MethodOptions)
+}
+
+func Method(m string) *Request {
+	return NewPureRequest().SetClient(DefaultClient).SetMethod(m)
 }

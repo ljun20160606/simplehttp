@@ -1,7 +1,6 @@
 package simplehttp
 
 import (
-	"github.com/ljun20160606/simplehttp/simplehttputil"
 	"io"
 	"net/http"
 	"strings"
@@ -16,7 +15,7 @@ type Request struct {
 	Body     io.Reader
 	JsonData interface{}
 	Cookies  []*http.Cookie
-	Charset  simplehttputil.Charset
+	Charset  Charset
 	Client   Client
 	Config   RequestConfig
 }
@@ -27,7 +26,16 @@ type RequestConfig struct {
 }
 
 func NewRequest(client Client) *Request {
-	return &Request{Header: http.Header{}, Client: client}
+	return NewPureRequest().SetClient(client)
+}
+
+func NewPureRequest() *Request {
+	return &Request{Header: http.Header{}, Charset: UTF8}
+}
+
+func (r *Request) SetClient(client Client) *Request {
+	r.Client = client
+	return r
 }
 
 func (r *Request) SetMethod(method string) *Request {
@@ -88,9 +96,9 @@ func (r *Request) AddCookie(ck *http.Cookie) *Request {
 	return r
 }
 
-func (r *Request) SetUrl(url string) *Request {
+func (r *Request) SetUrl(rawurl string) *Request {
 	builder := strings.Builder{}
-	builder.WriteString(url)
+	builder.WriteString(rawurl)
 	r.Url = &builder
 	return r
 }
@@ -165,12 +173,12 @@ func (r *Request) Head(k, v string) *Request {
 }
 
 func (r *Request) GB18030() *Request {
-	r.Charset = simplehttputil.GB18030
+	r.Charset = GB18030
 	return r
 }
 
 func (r *Request) UTF8() *Request {
-	r.Charset = simplehttputil.UTF8
+	r.Charset = UTF8
 	return r
 }
 
